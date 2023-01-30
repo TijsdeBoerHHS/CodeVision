@@ -97,8 +97,7 @@ def get_color_coordinate(frame, color_contours, output_color):
     return [False, 0, 0, frame, 0]
 
 
-# def get_blue_coordinate(frame):
-def getbluecoord(frame):
+def get_blue_coordinate(frame):
     color_lower = np.array([107, 156, 130])
     color_upper = np.array([129, 241, 255])
 
@@ -107,8 +106,7 @@ def getbluecoord(frame):
     return get_color_coordinate(frame, color_contours, output_color)
 
 
-# def get_red_coordinate(frame):
-def getredcoord(frame):
+def get_red_coordinate(frame):
     color_lower = np.array([0, 108, 159])
     color_upper = np.array([179, 170, 186])
 
@@ -117,8 +115,7 @@ def getredcoord(frame):
     return get_color_coordinate(frame, color_contours, output_color)
 
 
-# def get_yellow_coordinate(frame):
-def getyellowcoord(frame):
+def get_yellow_coordinate(frame):
     color_lower = np.array([20, 185, 185])
     color_upper = np.array([34, 255, 255])
 
@@ -127,8 +124,7 @@ def getyellowcoord(frame):
     return get_color_coordinate(frame, color_contours, output_color)
 
 
-# def get_green_coordinate(frame):
-def getgreencoord(frame):
+def get_green_coordinate(frame):
     red_lower = np.array([65, 77, 83])
     red_upper = np.array([93, 145, 121])
 
@@ -137,8 +133,7 @@ def getgreencoord(frame):
     return get_color_coordinate(frame, color_contours, output_color)
 
 
-# def get_orange_coordinate(frame):
-def getorangecoord(frame):
+def get_orange_coordinate(frame):
     color_lower = np.array([6, 0, 160])
     color_upper = np.array([14, 159, 240])
     color_contours, output_color = get_color_contours(frame, color_lower, color_upper, (0, 165, 255))
@@ -146,8 +141,7 @@ def getorangecoord(frame):
     return get_color_coordinate(frame, color_contours, output_color)
 
 
-# def get_white_coordinate(frame):
-def getwhitecoord(frame):
+def get_white_coordinate(frame):
     color_lower = np.array([0, 0, 210])
     color_upper = np.array([180, 40, 255])
 
@@ -156,8 +150,7 @@ def getwhitecoord(frame):
     return get_color_coordinate(frame, color_contours, output_color)
 
 
-# def get_purple_coordinate(frame):
-def getpurplecoord(frame):
+def get_purple_coordinate(frame):
     color_lower = np.array([88, 20, 0])
     color_upper = np.array([131, 126, 169])
 
@@ -174,54 +167,40 @@ def getframe():
 def getnextframe(colors, frame):
     detect = False
     if (colors[0] == True) and (detect == False):
-        detect, x, y, newframe, angle = getbluecoord(frame)
+        detect, x, y, newframe, angle = get_blue_coordinate(frame)
         if detect:
             rotangle = angle  # - "getal"
             return (newframe, x, y, "b", rotangle)
-        else:
-            pass
     if (colors[1] == True) and (detect == False):
-        detect, x, y, newframe, angle = getredcoord(frame)
+        detect, x, y, newframe, angle = get_red_coordinate(frame)
         if detect:
             rotangle = angle  # - "getal"
             return (newframe, x, y, "r", rotangle)
-        else:
-            pass
     if (colors[2] == True) and (detect == False):
-        detect, x, y, newframe, angle = getyellowcoord(frame)
+        detect, x, y, newframe, angle = get_yellow_coordinate(frame)
         if detect:
             rotangle = angle  # - "getal"
             return (newframe, x, y, "y", rotangle)
-        else:
-            pass
     if (colors[3] == True) and (detect == False):
-        detect, x, y, newframe, angle = getgreencoord(frame)
+        detect, x, y, newframe, angle = get_green_coordinate(frame)
         if detect:
             rotangle = angle  # - "getal"
             return (newframe, x, y, "g", rotangle)
-        else:
-            pass
     if (colors[4] == True) and (detect == False):
-        detect, x, y, newframe, angle = getorangecoord(frame)
+        detect, x, y, newframe, angle = get_orange_coordinate(frame)
         if detect:
             rotangle = angle  # - "getal"
             return (newframe, x, y, "o", rotangle)
-        else:
-            pass
     if (colors[5] == True) and (detect == False):
-        detect, x, y, newframe, angle = getwhitecoord(frame)
+        detect, x, y, newframe, angle = get_white_coordinate(frame)
         if detect:
             rotangle = angle  # - "getal"
             return (newframe, x, y, "w", rotangle)
-        else:
-            pass
     if (colors[6] == True) and (detect == False):
-        detect, x, y, newframe, angle = getpurplecoord(frame)
+        detect, x, y, newframe, angle = get_purple_coordinate(frame)
         if detect:
             rotangle = angle  # - "getal"
             return (newframe, x, y, "p", rotangle)
-        else:
-            pass
     if all(items is False for items in colors) == False:
         if detect == False:
             print("Piece Error")
