@@ -19,10 +19,8 @@ def conversion(x, y):
     return (xfin, yfin)
 
 
-def getrotangle(frame, contours):
-
+def get_rotation_angle(frame, contours):
     for i, c in enumerate(contours):
-
         area = cv2.contourArea(c)
 
         if area < 500 or 10000 > area:
@@ -37,10 +35,7 @@ def getrotangle(frame, contours):
         height = int(rect[1][1])
         angle = int(rect[2])
 
-        if width < height:
-            angle = 90 - angle
-        else:
-            angle = -angle
+        angle = 90 - angle if width < height else -angle
 
         label = "  Rotation Angle: " + str(angle) + " degrees"
         cv2.putText(frame, label, (center[0]-50, center[1]),
@@ -48,208 +43,127 @@ def getrotangle(frame, contours):
         cv2.drawContours(frame, [box], 0, (0, 0, 255), 2)
         print(angle)
         return frame, angle
+
     return frame, 0
 
 
+def get_color_contours(frame, color_lower, color_upper, color):
+    hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
+    kernel = np.ones((7, 7), np.uint8)
+
+    color_mask = cv2.inRange(hsv, color_lower, color_upper)
+    color_mask = cv2.morphologyEx(color_mask, cv2.MORPH_CLOSE, kernel)
+    color_mask = cv2.morphologyEx(color_mask, cv2.MORPH_OPEN, kernel)
+
+    # TODO: variable is never used
+    # segmented_color = cv2.bitwise_and(frame, frame, mask=color_mask)
+
+    # color_contours, color_hierarchy
+    color_contours, _ = cv2.findContours(
+        color_mask.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+
+    output_color = cv2.drawContours(frame, color_contours, -1, color, 3)
+    return color_contours, output_color
+
+
+def get_contour_coordinate(color_contours):
+    if len(color_contours):
+        # TODO: what is M?
+        M = cv2.moments(color_contours[0])
+        if M['m00'] != 0:
+            x = int(M['m10']/M['m00'])
+            y = int(M['m01']/M['m00'])
+            return {'x': x, 'y': y}
+
+    return None
+
+
+def draw_contour_and_text(frame, color_contours, coordinate):
+    cv2.drawContours(frame, [color_contours[0]], -1, (0, 255, 0), 2)
+    cv2.circle(frame, (coordinate['x'], coordinate['y']), 7, (0, 0, 255), -1)
+    cv2.putText(frame, "center", (coordinate['x'] - 20, coordinate['y'] - 20),
+                cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 0), 2)
+    print(f"x: {coordinate['x']} y: {coordinate['y']}")
+
+
+def get_color_coordinate(frame, color_contours, output_color):
+    coordinate = get_contour_coordinate(color_contours)
+    if coordinate:
+        draw_contour_and_text(frame, color_contours, coordinate)
+        frame, angle = get_rotation_angle(frame, color_contours)
+
+        return [True, coordinate['x'], coordinate['y'], output_color, angle]
+
+    return [False, 0, 0, frame, 0]
+
+
+# def get_blue_coordinate(frame):
 def getbluecoord(frame):
-    hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
-    kernel = np.ones((7, 7), np.uint8)
-    blue_lower = np.array([107, 156, 130])
-    blue_upper = np.array([129, 241, 255])
-    blue_mask = cv2.inRange(hsv, blue_lower, blue_upper)
-    blue_mask = cv2.morphologyEx(blue_mask, cv2.MORPH_CLOSE, kernel)
-    blue_mask = cv2.morphologyEx(blue_mask, cv2.MORPH_OPEN, kernel)
-    segmented_blue = cv2.bitwise_and(frame, frame, mask=blue_mask)
-    blue_contours, blue_hierarchy = cv2.findContours(
-        blue_mask.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
-    output_blue = cv2.drawContours(frame, blue_contours, -1, (255, 0, 0), 3)
-    if len(blue_contours):
-        M = cv2.moments(blue_contours[0])
-        if M['m00'] != 0:
-            cx = int(M['m10']/M['m00'])
-            cy = int(M['m01']/M['m00'])
-            cv2.drawContours(frame, [blue_contours[0]], -1, (0, 255, 0), 2)
-            cv2.circle(frame, (cx, cy), 7, (0, 0, 255), -1)
-            cv2.putText(frame, "center", (cx - 20, cy - 20),
-                        cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 0), 2)
-            print(f"x: {cx} y: {cy}")
-            frame, angle = getrotangle(frame, blue_contours)
-            return [True, cx, cy, output_blue, angle]
-    else:
-        return [False, 0, 0, frame, 0]
+    color_lower = np.array([107, 156, 130])
+    color_upper = np.array([129, 241, 255])
+
+    color_contours, output_color = get_color_contours(frame, color_lower, color_upper, (255, 0, 0))
+
+    return get_color_coordinate(frame, color_contours, output_color)
 
 
+# def get_red_coordinate(frame):
 def getredcoord(frame):
-    hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
-    kernel = np.ones((7, 7), np.uint8)
-    red_lower = np.array([0, 108, 159])
-    red_upper = np.array([179, 170, 186])
-    red_mask = cv2.inRange(hsv, red_lower, red_upper)
-    red_mask = cv2.morphologyEx(red_mask, cv2.MORPH_CLOSE, kernel)
-    red_mask = cv2.morphologyEx(red_mask, cv2.MORPH_OPEN, kernel)
-    segmented_red = cv2.bitwise_and(frame, frame, mask=red_mask)
-    red_contours, red_hierarchy = cv2.findContours(
-        red_mask.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
-    output_red = cv2.drawContours(frame, red_contours, -1, (0, 0, 255), 3)
-    if len(red_contours):
-        M = cv2.moments(red_contours[0])
-        if M['m00'] != 0:
-            cx = int(M['m10']/M['m00'])
-            cy = int(M['m01']/M['m00'])
-            cv2.drawContours(frame, [red_contours[0]], -1, (0, 255, 0), 2)
-            cv2.circle(frame, (cx, cy), 7, (0, 0, 255), -1)
-            cv2.putText(frame, "center", (cx - 20, cy - 20),
-                        cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 0), 2)
-            print(f"x: {cx} y: {cy}")
-            frame, angle = getrotangle(frame, red_contours)
-            return [True, cx, cy, output_red, angle]
-    else:
-        return [False, 0, 0, frame, 0]
+    color_lower = np.array([0, 108, 159])
+    color_upper = np.array([179, 170, 186])
+
+    color_contours, output_color = get_color_contours(frame, color_lower, color_upper, (0, 0, 255))
+
+    return get_color_coordinate(frame, color_contours, output_color)
 
 
+# def get_yellow_coordinate(frame):
 def getyellowcoord(frame):
-    hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
-    kernel = np.ones((7, 7), np.uint8)
-    yellow_lower = np.array([20, 185, 185])
-    yellow_upper = np.array([34, 255, 255])
-    yellow_mask = cv2.inRange(hsv, yellow_lower, yellow_upper)
-    yellow_mask = cv2.morphologyEx(yellow_mask, cv2.MORPH_CLOSE, kernel)
-    yellow_mask = cv2.morphologyEx(yellow_mask, cv2.MORPH_OPEN, kernel)
-    segmented_yellow = cv2.bitwise_and(frame, frame, mask=yellow_mask)
-    yellow_contours, yellow_hierarchy = cv2.findContours(
-        yellow_mask.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
-    output_yellow = cv2.drawContours(
-        frame, yellow_contours, -1, (0, 255, 255), 3)
-    if len(yellow_contours):
-        M = cv2.moments(yellow_contours[0])
-        if M['m00'] != 0:
-            cx = int(M['m10']/M['m00'])
-            cy = int(M['m01']/M['m00'])
-            cv2.drawContours(frame, [yellow_contours[0]], -1, (0, 255, 0), 2)
-            cv2.circle(frame, (cx, cy), 7, (0, 0, 255), -1)
-            cv2.putText(frame, "center", (cx - 20, cy - 20),
-                        cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 0), 2)
-            print(f"x: {cx} y: {cy}")
-            frame, angle = getrotangle(frame, yellow_contours)
-            return [True, cx, cy, output_yellow, angle]
-    else:
-        return [False, 0, 0, frame, 0]
+    color_lower = np.array([20, 185, 185])
+    color_upper = np.array([34, 255, 255])
+
+    color_contours, output_color = get_color_contours(frame, color_lower, color_upper, (0, 255, 255))
+
+    return get_color_coordinate(frame, color_contours, output_color)
 
 
+# def get_green_coordinate(frame):
 def getgreencoord(frame):
-    hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
-    kernel = np.ones((7, 7), np.uint8)
-    green_lower = np.array([65, 77, 83])
-    green_upper = np.array([93, 145, 121])
-    green_mask = cv2.inRange(hsv, green_lower, green_upper)
-    green_mask = cv2.morphologyEx(green_mask, cv2.MORPH_CLOSE, kernel)
-    green_mask = cv2.morphologyEx(green_mask, cv2.MORPH_OPEN, kernel)
-    segmented_green = cv2.bitwise_and(frame, frame, mask=green_mask)
-    green_contours, green_hierarchy = cv2.findContours(
-        green_mask.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
-    output_green = cv2.drawContours(frame, green_contours, -1, (0, 255, 0), 3)
-    if len(green_contours):
-        M = cv2.moments(green_contours[0])
-        if M['m00'] != 0:
-            cx = int(M['m10']/M['m00'])
-            cy = int(M['m01']/M['m00'])
-            cv2.drawContours(frame, [green_contours[0]], -1, (0, 255, 0), 2)
-            cv2.circle(frame, (cx, cy), 7, (0, 0, 255), -1)
-            cv2.putText(frame, "center", (cx - 20, cy - 20),
-                        cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 0), 2)
-            print(f"x: {cx} y: {cy}")
-            frame, angle = getrotangle(frame, green_contours)
-            return [True, cx, cy, output_green, angle]
-    else:
-        return [False, 0, 0, frame, 0]
+    red_lower = np.array([65, 77, 83])
+    red_upper = np.array([93, 145, 121])
+
+    color_contours, output_color = get_color_contours(frame, red_lower, red_upper, (0, 255, 255))
+
+    return get_color_coordinate(frame, color_contours, output_color)
 
 
+# def get_orange_coordinate(frame):
 def getorangecoord(frame):
-    hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
-    kernel = np.ones((7, 7), np.uint8)
-    orange_lower = np.array([6, 0, 160])
-    orange_upper = np.array([14, 159, 240])
-    orange_mask = cv2.inRange(hsv, orange_lower, orange_upper)
-    orange_mask = cv2.morphologyEx(orange_mask, cv2.MORPH_CLOSE, kernel)
-    orange_mask = cv2.morphologyEx(orange_mask, cv2.MORPH_OPEN, kernel)
-    segmented_orange = cv2.bitwise_and(frame, frame, mask=orange_mask)
-    orange_contours, orange_hierarchy = cv2.findContours(
-        orange_mask.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
-    output_orange = cv2.drawContours(
-        frame, orange_contours, -1, (0, 165, 255), 3)
-    if len(orange_contours):
-        M = cv2.moments(orange_contours[0])
-        if M['m00'] != 0:
-            cx = int(M['m10']/M['m00'])
-            cy = int(M['m01']/M['m00'])
-            cv2.drawContours(frame, [orange_contours[0]], -1, (0, 255, 0), 2)
-            cv2.circle(frame, (cx, cy), 7, (0, 0, 255), -1)
-            cv2.putText(frame, "center", (cx - 20, cy - 20),
-                        cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 0), 2)
-            print(f"x: {cx} y: {cy}")
-            frame, angle = getrotangle(frame, orange_contours)
-            return [True, cx, cy, output_orange, angle]
-    else:
-        return [False, 0, 0, frame, 0]
+    color_lower = np.array([6, 0, 160])
+    color_upper = np.array([14, 159, 240])
+    color_contours, output_color = get_color_contours(frame, color_lower, color_upper, (0, 165, 255))
+
+    return get_color_coordinate(frame, color_contours, output_color)
 
 
+# def get_white_coordinate(frame):
 def getwhitecoord(frame):
-    hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
-    kernel = np.ones((7, 7), np.uint8)
-    white_lower = np.array([0, 0, 210])
-    white_upper = np.array([180, 40, 255])
-    white_mask = cv2.inRange(hsv, white_lower, white_upper)
-    white_mask = cv2.morphologyEx(white_mask, cv2.MORPH_CLOSE, kernel)
-    white_mask = cv2.morphologyEx(white_mask, cv2.MORPH_OPEN, kernel)
-    segmented_white = cv2.bitwise_and(frame, frame, mask=white_mask)
-    white_contours, white_hierarchy = cv2.findContours(
-        white_mask.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
-    output_white = cv2.drawContours(
-        frame, white_contours, -1, (0, 165, 255), 3)
-    if len(white_contours):
-        M = cv2.moments(white_contours[0])
-        if M['m00'] != 0:
-            cx = int(M['m10']/M['m00'])
-            cy = int(M['m01']/M['m00'])
-            cv2.drawContours(
-                frame, [white_contours[0]], -1, (255, 255, 255), 2)
-            cv2.circle(frame, (cx, cy), 7, (0, 0, 255), -1)
-            cv2.putText(frame, "center", (cx - 20, cy - 20),
-                        cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 0), 2)
-            print(f"x: {cx} y: {cy}")
-            frame, angle = getrotangle(frame, white_contours)
-            return [True, cx, cy, output_white, angle]
-    else:
-        return [False, 0, 0, frame, 0]
+    color_lower = np.array([0, 0, 210])
+    color_upper = np.array([180, 40, 255])
+
+    color_contours, output_color = get_color_contours(frame, color_lower, color_upper, (0, 165, 255))
+
+    return get_color_coordinate(frame, color_contours, output_color)
 
 
+# def get_purple_coordinate(frame):
 def getpurplecoord(frame):
-    hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
-    kernel = np.ones((7, 7), np.uint8)
-    purple_lower = np.array([88, 20, 0])
-    purple_upper = np.array([131, 126, 169])
-    purple_mask = cv2.inRange(hsv, purple_lower, purple_upper)
-    purple_mask = cv2.morphologyEx(purple_mask, cv2.MORPH_CLOSE, kernel)
-    purple_mask = cv2.morphologyEx(purple_mask, cv2.MORPH_OPEN, kernel)
-    segmented_purple = cv2.bitwise_and(frame, frame, mask=purple_mask)
-    purple_contours, purple_hierarchy = cv2.findContours(
-        purple_mask.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
-    output_purple = cv2.drawContours(
-        frame, purple_contours, -1, (0, 165, 255), 3)
-    if len(purple_contours):
-        M = cv2.moments(purple_contours[0])
-        if M['m00'] != 0:
-            cx = int(M['m10']/M['m00'])
-            cy = int(M['m01']/M['m00'])
-            cv2.drawContours(frame, [purple_contours[0]], -1, (272, 75, 54), 2)
-            cv2.circle(frame, (cx, cy), 7, (0, 0, 255), -1)
-            cv2.putText(frame, "center", (cx - 20, cy - 20),
-                        cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 0), 2)
-            print(f"x: {cx} y: {cy}")
-            frame, angle = getrotangle(frame, purple_contours)
-            return [True, cx, cy, output_purple, angle]
-    else:
-        return [False, 0, 0, frame, 0]
+    color_lower = np.array([88, 20, 0])
+    color_upper = np.array([131, 126, 169])
+
+    color_contours, output_color = get_color_contours(frame, color_lower, color_upper, (0, 165, 255))
+
+    return get_color_coordinate(frame, color_contours, output_color)
 
 
 def getframe():
