@@ -66,7 +66,7 @@ def conversion(x, y):
                    [-np.sin(rotation), np.cos(rotation)]))
     xy = np.array([x, y])
     xrot, yrot = np.dot(rot, xy)
-    xfin = 0  # scaling
+    xfin = 0.16475*xrot-155.21
     yfin = 0  # scaling
     return (xfin, yfin)
 
