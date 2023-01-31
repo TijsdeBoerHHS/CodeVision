@@ -1,6 +1,8 @@
 import cv2
 import numpy as np
 import toolbox as tb
+import snap7
+from snap7 import util
 
 cam = cv2.VideoCapture(0)
 
@@ -13,6 +15,10 @@ colorList = [
     'white',
     'purple'
 ]
+def plc_get_connection():
+    client = snap7.client.Client()
+    client.connect('192.168.0.15',0,0)
+    client.get_connected()
 
 def conversion(x, y):
     xrot = 0
