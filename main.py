@@ -62,8 +62,11 @@ def get_color_contours(frame, color_lower, color_upper, color):
     kernel = np.ones((7, 7), np.uint8)
 
     color_mask = cv2.inRange(hsv, color_lower, color_upper)
+    cv2.imwrite('debug/color_mask1.png', color_mask)
     color_mask = cv2.morphologyEx(color_mask, cv2.MORPH_CLOSE, kernel)
+    cv2.imwrite('debug/color_mask2.png', color_mask)
     color_mask = cv2.morphologyEx(color_mask, cv2.MORPH_OPEN, kernel)
+    cv2.imwrite('debug/color_mask3.png', color_mask)
 
     # TODO: variable is never used
     # segmented_color = cv2.bitwise_and(frame, frame, mask=color_mask)
@@ -135,8 +138,8 @@ def get_yellow_coordinate(frame):
 
 
 def get_green_coordinate(frame):
-    red_lower = np.array([65, 77, 83])
-    red_upper = np.array([93, 145, 121])
+    red_lower = np.array([37, 61, 0])
+    red_upper = np.array([68, 222, 255])
 
     color_contours, output_color = get_color_contours(frame, red_lower, red_upper, (0, 255, 255))
 
@@ -144,8 +147,8 @@ def get_green_coordinate(frame):
 
 
 def get_orange_coordinate(frame):
-    color_lower = np.array([6, 0, 160])
-    color_upper = np.array([14, 159, 240])
+    color_lower = np.array([6, 190, 0])
+    color_upper = np.array([11, 255, 255])
     color_contours, output_color = get_color_contours(frame, color_lower, color_upper, (0, 165, 255))
 
     return get_color_coordinate(frame, color_contours, output_color)
@@ -170,8 +173,8 @@ def get_purple_coordinate(frame):
 
 
 def get_frame():
-    _, frame = cam.read()
-    return frame
+    # _, frame = cam.read()
+    return cv2.imread('blok.jpg')
 
 
 def get_next_blok(colors: list[str], frame):
@@ -248,7 +251,11 @@ def main():
         colorList[5],
         colorList[6],
     ]
-    colorsDetected = []
+    colorsDetected = [
+        
+    ]
+
+    # tb.find_color_threshold(get_frame())
 
     while (True):
         if cv2.waitKey(0) == ord("n"):
