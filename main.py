@@ -15,12 +15,46 @@ colorList = [
     'white',
     'purple'
 ]
+
+color_ul = {
+    'blue':{
+        'lower':[106, 161, 98],
+        'upper':[109, 255, 255]
+    },
+    'red':{
+        'lower':[4, 53, 24],
+        'upper':[8, 247, 247]
+    },
+    'yellow':{
+        'lower':[24, 71, 105],
+        'upper':[33, 255, 255]
+    },
+    'green':{
+        'lower':[68, 79, 89],
+        'upper':[100, 168, 242]
+    },
+    'orange':{
+        'lower':[9, 162, 106],
+        'upper':[20, 255, 255]
+    },
+    'white':{
+        'lower':[0, 0, 199],
+        'upper':[179, 26, 255]
+    },
+    'purple':{
+        'lower':[122, 111, 83],
+        'upper':[168, 203, 207]
+    },
+}
+
+
 def plc_get_connection():
     client = snap7.client.Client()
     client.connect('192.168.0.15',0,0)
     client.get_connected()
     db = client.db_read(5,0,18)
     print(db)
+
 
 def conversion(x, y):
     xrot = 0
@@ -65,10 +99,23 @@ def get_rotation_angle(frame, contours):
     return frame, 0
 
 
+def contour_fiter(color_contours):
+    color_contours = list(color_contours)
+    dellist = []
+    for c in range(len(color_contours)):
+        area = cv2.contourArea(color_contours[c])
+        if area < 1000:
+            dellist.append(c)
+        else:
+            continue
+    for i in reversed(range(len(dellist))):
+        del color_contours[dellist[i]]
+    return color_contours
+
+
 def get_color_contours(frame, color_lower, color_upper, color):
     hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
     kernel = np.ones((7, 7), np.uint8)
-
     color_mask = cv2.inRange(hsv, color_lower, color_upper)
     cv2.imwrite('debug/color_mask1.png', color_mask)
     color_mask = cv2.morphologyEx(color_mask, cv2.MORPH_CLOSE, kernel)
@@ -78,6 +125,7 @@ def get_color_contours(frame, color_lower, color_upper, color):
     color_contours, _ = cv2.findContours(
         color_mask.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
 
+    color_contours = contour_fiter(color_contours)
     output_color = cv2.drawContours(frame, color_contours, -1, color, 3)
     return color_contours, output_color
 
@@ -113,8 +161,8 @@ def get_color_coordinate(frame, color_contours, output_color):
 
 
 def get_blue_coordinate(frame):
-    color_lower = np.array([90, 0, 0])
-    color_upper = np.array([111, 255, 255])
+    color_lower = np.array(color_ul['blue']['lower'])
+    color_upper = np.array(color_ul['blue']['upper'])
 
     color_contours, output_color = get_color_contours(frame, color_lower, color_upper, (255, 0, 0))
 
@@ -122,8 +170,8 @@ def get_blue_coordinate(frame):
 
 
 def get_red_coordinate(frame):
-    color_lower = np.array([0, 108, 85])
-    color_upper = np.array([6, 214, 255])
+    color_lower = np.array(color_ul['red']['lower'])
+    color_upper = np.array(color_ul['red']['upper'])
 
     color_contours, output_color = get_color_contours(frame, color_lower, color_upper, (0, 0, 255))
 
@@ -131,8 +179,8 @@ def get_red_coordinate(frame):
 
 
 def get_yellow_coordinate(frame):
-    color_lower = np.array([20, 185, 185])
-    color_upper = np.array([34, 255, 255])
+    color_lower = np.array(color_ul['yellow']['lower'])
+    color_upper = np.array(color_ul['yellow']['upper'])
 
     color_contours, output_color = get_color_contours(frame, color_lower, color_upper, (0, 255, 255))
 
@@ -140,8 +188,8 @@ def get_yellow_coordinate(frame):
 
 
 def get_green_coordinate(frame):
-    red_lower = np.array([37, 61, 0])
-    red_upper = np.array([68, 222, 255])
+    red_lower = np.array(color_ul['green']['lower'])
+    red_upper = np.array(color_ul['green']['upper'])
 
     color_contours, output_color = get_color_contours(frame, red_lower, red_upper, (0, 255, 255))
 
@@ -149,16 +197,16 @@ def get_green_coordinate(frame):
 
 
 def get_orange_coordinate(frame):
-    color_lower = np.array([6, 190, 0])
-    color_upper = np.array([11, 255, 255])
+    color_lower = np.array(color_ul['orange']['lower'])
+    color_upper = np.array(color_ul['orange']['upper'])
     color_contours, output_color = get_color_contours(frame, color_lower, color_upper, (0, 165, 255))
 
     return get_color_coordinate(frame, color_contours, output_color)
 
 
 def get_white_coordinate(frame):
-    color_lower = np.array([0, 0, 168])
-    color_upper = np.array([31, 41, 255])
+    color_lower = np.array(color_ul['white']['lower'])
+    color_upper = np.array(color_ul['white']['upper'])
 
     color_contours, output_color = get_color_contours(frame, color_lower, color_upper, (0, 165, 255))
 
@@ -166,8 +214,8 @@ def get_white_coordinate(frame):
 
 
 def get_purple_coordinate(frame):
-    color_lower = np.array([110, 0, 0])
-    color_upper = np.array([179, 101, 204])
+    color_lower = np.array(color_ul['purple']['lower'])
+    color_upper = np.array(color_ul['purple']['upper'])
 
     color_contours, output_color = get_color_contours(frame, color_lower, color_upper, (0, 165, 255))
 
@@ -176,7 +224,9 @@ def get_purple_coordinate(frame):
 
 def get_frame():
     # _, frame = cam.read()
-    return cv2.imread('blok.jpg')
+    frame = cv2.imread('bakje3.png')
+    blur = cv2.GaussianBlur(frame,(15,15),cv2.BORDER_DEFAULT)
+    return blur
 
 
 def get_next_blok(colors: list[str], frame):
@@ -256,7 +306,6 @@ def main():
     colorsDetected = [
         
     ]
-
     # tb.find_color_threshold(get_frame())
 
     while (True):
@@ -264,7 +313,7 @@ def main():
             frame = get_frame()
             frame, x, y, msg, rotangle = get_next_blok(queueColorDetection, frame)
             # colors = checkmsg(msg, colors)
-            #xfin,yfin = conversion(x,y)
+            # xfin,yfin = conversion(x,y)
             cv2.imshow("Detection", cv2.resize(frame, resizeShape))
 
 

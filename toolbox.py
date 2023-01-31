@@ -25,7 +25,7 @@ def find_color_threshold(img):
     hMin = sMin = vMin = hMax = sMax = vMax = 0
     phMin = psMin = pvMin = phMax = psMax = pvMax = 0
 
-    resizeFactor = img.shape[0] / 600
+    resizeFactor = img.shape[0] / 200
     resizeShape = (round(img.shape[1] / resizeFactor), round(img.shape[0] / resizeFactor))
     output = img
     waitTime = 33
