@@ -19,6 +19,8 @@ def plc_get_connection():
     client = snap7.client.Client()
     client.connect('192.168.0.15',0,0)
     client.get_connected()
+    db = client.db_read(5,0,18)
+    print(db)
 
 def conversion(x, y):
     xrot = 0
@@ -73,11 +75,6 @@ def get_color_contours(frame, color_lower, color_upper, color):
     cv2.imwrite('debug/color_mask2.png', color_mask)
     color_mask = cv2.morphologyEx(color_mask, cv2.MORPH_OPEN, kernel)
     cv2.imwrite('debug/color_mask3.png', color_mask)
-
-    # TODO: variable is never used
-    # segmented_color = cv2.bitwise_and(frame, frame, mask=color_mask)
-
-    # color_contours, color_hierarchy
     color_contours, _ = cv2.findContours(
         color_mask.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
 
@@ -87,7 +84,6 @@ def get_color_contours(frame, color_lower, color_upper, color):
 
 def get_contour_coordinate(color_contours):
     if len(color_contours):
-        # TODO: what is M?
         M = cv2.moments(color_contours[0])
         if M['m00'] != 0:
             x = int(M['m10']/M['m00'])
