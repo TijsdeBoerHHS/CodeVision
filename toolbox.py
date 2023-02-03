@@ -8,6 +8,7 @@ from vision import get_color_contours
 def find_color_threshold(att_img, cam, mode=None):
     # Create a window
     cv2.namedWindow('image')
+    cv2.resizeWindow('image', 960, 540)
 
     # create trackbars for color change
     cv2.createTrackbar('HMin', 'image', 0, 179, lambda _: None)
@@ -22,6 +23,8 @@ def find_color_threshold(att_img, cam, mode=None):
     # Set default value for MAX HSV trackbars.
     cv2.setTrackbarPos('HMax', 'image', 179)
     cv2.setTrackbarPos('SMax', 'image', 255)
+    cv2.setTrackbarPos('Bright', 'image', 128)
+    cv2.setTrackbarPos('Exposure', 'image', 128)
     cv2.setTrackbarPos('VMax', 'image', 255)
 
     # Initialize to check if HSV min/max value changes
@@ -34,7 +37,7 @@ def find_color_threshold(att_img, cam, mode=None):
         if callable(att_img):
             img = att_img()
 
-        resizeFactor = img.shape[0] / 300
+        resizeFactor = img.shape[0] / 600
         resizeShape = (round(img.shape[1] / resizeFactor), round(img.shape[0] / resizeFactor))
 
         # get current positions of all trackbars

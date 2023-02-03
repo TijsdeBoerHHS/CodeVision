@@ -44,7 +44,7 @@ def get_rotation_angle(frame, contours):
 
 def contour_fiter(color_contours):
     color_contours = list(color_contours)
-    if not color_contours:
+    if color_contours == type(None):
         return color_contours
 
     c_max = 0

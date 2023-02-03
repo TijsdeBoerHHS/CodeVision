@@ -8,14 +8,15 @@ from vision import get_coordinate_factory
 
 print('Connecting to the camera...')
 cam = cv2.VideoCapture(0)
-cam.set(10,50)
+cam.set(cv2.CAP_PROP_EXPOSURE,-6)
+cam.set(cv2.CAP_PROP_BRIGHTNESS, 85)
 print('Connected')
 
 
 colorList = {
     'blue': {
-        'lower': [108, 181, 115],
-        'upper': [117, 255, 220],
+        'lower': [94, 184, 74],
+        'upper': [118, 255, 220],
         'colors': {
             'contour': (255, 0, 0),
             'text': (255, 255, 255),
@@ -23,8 +24,8 @@ colorList = {
         }
     },
     'red': {
-        'lower': [0, 2, 108],
-        'upper': [7, 214, 255],
+        'lower': [0, 18, 0],
+        'upper': [2, 255, 255],
         'colors': {
             'contour': (0, 0, 255),
             'text': (0, 0, 0),
@@ -32,8 +33,8 @@ colorList = {
         }
     },
     'yellow': {
-        'lower': [20, 185, 185],
-        'upper': [34, 255, 255],
+        'lower': [21, 184, 74],
+        'upper': [96, 255, 220],
         'colors': {
             'contour': (0, 255, 255),
             'text': (0, 0, 0),
@@ -41,8 +42,8 @@ colorList = {
         }
     },
     'green': {
-        'lower': [37, 61, 0],
-        'upper': [68, 222, 255],
+        'lower': [53, 180, 0],
+        'upper': [102, 255, 112],
         'colors': {
             'contour': (0, 255, 0),
             'text': (255, 255, 255),
@@ -50,8 +51,8 @@ colorList = {
         }
     },
     'orange': {
-        'lower': [6, 139, 126],
-        'upper': [27, 253, 255],
+        'lower': [2, 148, 141],
+        'upper': [28, 255, 214],
         'colors': {
             'contour': (0, 165, 255),
             'text': (255, 255, 255),
@@ -59,8 +60,8 @@ colorList = {
         }
     },
     'white': {
-        'lower': [0, 0, 168],
-        'upper': [31, 41, 255],
+        'lower': [48, 0, 184],
+        'upper': [119, 129, 233],
         'colors': {
             'contour': (255, 255, 255),
             'text': (0, 0, 0),
@@ -68,8 +69,8 @@ colorList = {
         }
     },
     'purple': {
-        'lower': [118, 96, 66],
-        'upper': [161, 255, 255],
+        'lower': [116, 195, 73],
+        'upper': [128, 243, 192],
         'colors': {
             'contour': (174, 0, 255),
             'text': (255, 255, 255),
@@ -89,8 +90,8 @@ def conversion(x, y):
                    [-np.sin(rotation), np.cos(rotation)]))
     xy = np.array([x, y])
     xrot, yrot = np.dot(rot, xy)
-    xfin = 0  # scaling
-    yfin = 0  # scaling
+    xfin = (0.16475*xrot)-155.21
+    yfin = (0.1440*yrot)+78.7193
     return (xfin, yfin)
 
 
@@ -148,7 +149,7 @@ def connection_test():
 
 
 def main():
-    find_color_threshold(get_frame, cam, 1)
+    # find_color_threshold(get_frame, cam, 1)
     frame = get_frame()
     resizeFactor = frame.shape[0] / 600
     resizeShape = (round(frame.shape[1] / resizeFactor), round(frame.shape[0] / resizeFactor))
@@ -200,9 +201,10 @@ def main():
         if cv2.waitKey(0) == ord("n"):
             frame = get_frame()
             frame, x, y, msg, rotangle = get_next_blok(queueColorDetection, frame)
-            #xfin,yfin = conversion(x,y)
+            xfin,yfin = conversion(x,y)
+            print(xfin, yfin)
             if msg:
-                data = set_data_for_buffer(test[counter % 4][0], test[counter % 4][1], 30, 'blue')
+                data = set_data_for_buffer(xfin, yfin, rotangle, 'blue')
                 try:
                     send_data(data)
                 except TimeoutError:
