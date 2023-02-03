@@ -34,7 +34,7 @@ def find_color_threshold(att_img, cam, mode=None):
         if callable(att_img):
             img = att_img()
 
-        resizeFactor = img.shape[0] / 600
+        resizeFactor = img.shape[0] / 300
         resizeShape = (round(img.shape[1] / resizeFactor), round(img.shape[0] / resizeFactor))
 
         # get current positions of all trackbars

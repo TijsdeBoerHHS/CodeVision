@@ -44,15 +44,18 @@ def get_rotation_angle(frame, contours):
 
 def contour_fiter(color_contours):
     color_contours = list(color_contours)
-    dellist = []
+    if not color_contours:
+        return color_contours
+
+    c_max = 0
+    c_index = None
     for c in range(len(color_contours)):
         area = cv2.contourArea(color_contours[c])
-        if area < 1000:
-            dellist.append(c)
-        else:
-            continue
-    for i in reversed(range(len(dellist))):
-        del color_contours[dellist[i]]
+        if area > c_max:
+            c_max = area
+            c_index = c
+
+    color_contours = [color_contours[c_index]]
     return color_contours
 
 

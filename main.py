@@ -8,6 +8,7 @@ from vision import get_coordinate_factory
 
 print('Connecting to the camera...')
 cam = cv2.VideoCapture(0)
+cam.set(10,50)
 print('Connected')
 
 
@@ -22,8 +23,8 @@ colorList = {
         }
     },
     'red': {
-        'lower': [0, 150, 130],
-        'upper': [7, 255, 235],
+        'lower': [0, 2, 108],
+        'upper': [7, 214, 255],
         'colors': {
             'contour': (0, 0, 255),
             'text': (0, 0, 0),
@@ -49,8 +50,8 @@ colorList = {
         }
     },
     'orange': {
-        'lower': [8, 160, 144],
-        'upper': [98, 255, 255],
+        'lower': [6, 139, 126],
+        'upper': [27, 253, 255],
         'colors': {
             'contour': (0, 165, 255),
             'text': (255, 255, 255),
@@ -67,8 +68,8 @@ colorList = {
         }
     },
     'purple': {
-        'lower': [110, 0, 0],
-        'upper': [179, 101, 204],
+        'lower': [118, 96, 66],
+        'upper': [161, 255, 255],
         'colors': {
             'contour': (174, 0, 255),
             'text': (255, 255, 255),
