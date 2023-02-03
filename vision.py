@@ -42,6 +42,20 @@ def get_rotation_angle(frame, contours):
     return frame, 0
 
 
+def contour_fiter(color_contours):
+    color_contours = list(color_contours)
+    dellist = []
+    for c in range(len(color_contours)):
+        area = cv2.contourArea(color_contours[c])
+        if area < 1000:
+            dellist.append(c)
+        else:
+            continue
+    for i in reversed(range(len(dellist))):
+        del color_contours[dellist[i]]
+    return color_contours
+
+
 def get_color_contours(frame, color_lower, color_upper, contour_color, kernel=(7, 7)):
     hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
     kernel = np.ones(kernel, np.uint8)
@@ -54,6 +68,7 @@ def get_color_contours(frame, color_lower, color_upper, contour_color, kernel=(7
         color_mask.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
 
     output_color = cv2.drawContours(frame, color_contours, -1, contour_color, 3)
+    color_contours = contour_fiter(color_contours)
     return color_contours, output_color, color_mask
 
 
