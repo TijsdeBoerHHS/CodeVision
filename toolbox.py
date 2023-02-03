@@ -5,7 +5,7 @@ from vision import get_color_contours
 """https://stackoverflow.com/a/57474183/10598904"""
 
 
-def find_color_threshold(att_img, mode=None):
+def find_color_threshold(att_img, cam, mode=None):
     # Create a window
     cv2.namedWindow('image')
 
@@ -16,6 +16,8 @@ def find_color_threshold(att_img, mode=None):
     cv2.createTrackbar('HMax', 'image', 0, 179, lambda _: None)
     cv2.createTrackbar('SMax', 'image', 0, 255, lambda _: None)
     cv2.createTrackbar('VMax', 'image', 0, 255, lambda _: None)
+    cv2.createTrackbar('Bright', 'image', 0, 255, lambda _: None)
+    cv2.createTrackbar('Exposure', 'image', 0, 255, lambda _: None)
 
     # Set default value for MAX HSV trackbars.
     cv2.setTrackbarPos('HMax', 'image', 179)
@@ -43,6 +45,12 @@ def find_color_threshold(att_img, mode=None):
         hMax = cv2.getTrackbarPos('HMax', 'image')
         sMax = cv2.getTrackbarPos('SMax', 'image')
         vMax = cv2.getTrackbarPos('VMax', 'image')
+
+        bright = cv2.getTrackbarPos('Bright', 'image')
+        exposure = cv2.getTrackbarPos('Exposure', 'image')
+
+        cam.set(cv2.CAP_PROP_EXPOSURE, exposure - 128)
+        cam.set(cv2.CAP_PROP_BRIGHTNESS, bright - 128)
 
         # Set minimum and max HSV values to display
         lower = np.array([hMin, sMin, vMin])

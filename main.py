@@ -147,7 +147,7 @@ def connection_test():
 
 
 def main():
-    # find_color_threshold(get_frame, 1)
+    find_color_threshold(get_frame, cam, 1)
     frame = get_frame()
     resizeFactor = frame.shape[0] / 600
     resizeShape = (round(frame.shape[1] / resizeFactor), round(frame.shape[0] / resizeFactor))
