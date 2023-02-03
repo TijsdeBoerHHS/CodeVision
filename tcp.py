@@ -17,7 +17,9 @@ def send_data(send_data, debug=False):
             print('Sended', send_data) if debug else None
             print('S', end='', flush=True) if not debug else None
         except TimeoutError:
-            print('Send Timeout')
+            print('.', end='', flush=True) if not debug else None
+            print('Send Timeout') if debug else None
+            return None
 
 
 def receive_data(structure, debug=False):
@@ -32,5 +34,6 @@ def receive_data(structure, debug=False):
             print('R', end='', flush=True) if not debug else None
             return unpack(structure, rcv_data)
         except TimeoutError:
-            print('Receive Timeout')
-            return False
+            print('.', end='', flush=True) if not debug else None
+            print('Receive Timeout') if debug else None
+            return None
