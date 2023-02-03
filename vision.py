@@ -48,9 +48,7 @@ def get_color_contours(frame, color_lower, color_upper, contour_color, kernel=(7
 
     color_mask = cv2.inRange(hsv, color_lower, color_upper)
     # cv2.imwrite('debug/color_mask1.png', color_mask)
-    color_mask = cv2.morphologyEx(color_mask, cv2.MORPH_CLOSE, kernel)
-    # cv2.imwrite('debug/color_mask2.png', color_mask)
-    color_mask = cv2.morphologyEx(color_mask, cv2.MORPH_OPEN, kernel)
+    color_mask = cv2.morphologyEx(color_mask, cv2.MORPH_CLOSE, kernel, iterations=5)
     # cv2.imwrite('debug/color_mask3.png', color_mask)
     color_contours, _ = cv2.findContours(
         color_mask.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
